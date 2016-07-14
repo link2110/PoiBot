@@ -5,9 +5,14 @@ from pint import UnitRegistry
 import datetime as dt
 import aiohttp
 import random
-from terminaltables import AsciiTable
+import json
+from PyDictionary import PyDictionary
 
-owm = pyowm.OWM("cd7db42523c1c1e4e4a5af9d2df6b168")
+with open("H:\Documents\Bot Folder\PoiBot\credentials\\credentials.txt") as f:
+    creds = json.load(f)
+    token = creds["owm"]
+    owm = pyowm.OWM(token)
+# owm = pyowm.OWM("cd7db42523c1c1e4e4a5af9d2df6b168")
 registry = owm.city_id_registry()
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
 Q_ = ureg.Quantity
@@ -255,8 +260,19 @@ class Commands():
         status = "{} **playing** {}".format(member.status, member.game) if member.game else member.status
         roles = ", ".join(str(role) for role in member.roles).lstrip("@everyone, ")
         msg = "**Name:** {}\n**ID:** {}\n**Joined server:** {}\n**Account created:** {}\n**Status:** {}\n**Roles:** {}".format(
-            member.name, member.id, member.joined_at.strftime("%A %B %d %H:%M %p UTC"),
-            member.created_at.strftime("%A %B %d %H:%M %p UTC"), status, roles)
+            member.name, member.id, member.joined_at.strftime("%A %B %d %Y %H:%M %p UTC"),
+            member.created_at.strftime("%A %B %d %Y %H:%M %p UTC"), status, roles)
+        await self.bot.say(msg)
+
+    @commands.command(pass_context=True, no_pm=True)
+    async def serverinfo(self, ctx):
+        """Gets info about the server"""
+        msg = "**{}** (ID: {})\n**Owner:** {} (ID: {})\n**Members:** {}\n**Channels:** {} text, {} voice\n**Roles:** {}\n**Created on:** {}\n**Default channel:** {}\n**Region:** {}\n**Icon:** <{}>".format(
+            ctx.message.server.name, ctx.message.server.id, ctx.message.server.owner, ctx.message.server.owner.id,
+            len(ctx.message.server.members), sum(1 for c in ctx.message.server.channels if c.type == discord.ChannelType.text),
+            sum(1 for c in ctx.message.server.channels if c.type == discord.ChannelType.voice),
+            len(ctx.message.server.roles), ctx.message.server.created_at.strftime("%A %B %d %Y %H:%M %p UTC"),
+            ctx.message.server.default_channel.mention, ctx.message.server.region, ctx.message.server.icon_url)
         await self.bot.say(msg)
 
     @commands.command(pass_context=True, no_pm=True)
@@ -264,6 +280,11 @@ class Commands():
         """Gets a mentioned users avatar"""
         if ctx.message.mentions:
             await self.bot.say(member.avatar_url)
+
+    @commands.command(no_pm=True)
+    async def define(self, word: str):
+        dictionary = PyDictionary()
+        await self.bot.say(dictionary.meaning(word))
 
 
 
