@@ -35,7 +35,7 @@ class Special:
     async def o7(self, ctx):
         if ctx.message.server.id not in approved_servers:
             return
-        o7_list = ["http://i.imgur.com/KsGrJFa.gif", "http://i.imgur.com/q1He4L7.gif", "http://i.imgur.com/bG5I7my.gif", "http://i.imgur.com/NL1oyAO.gif"]
+        o7_list = ["http://i.imgur.com/KsGrJFa.gif", "http://i.imgur.com/qYwvw4L.gifv", "http://i.imgur.com/bG5I7my.gif", "http://i.imgur.com/NL1oyAO.gif"]
         randpic = random.randint(0, len(o7_list) - 1)
         await self.bot.say(o7_list[randpic])
 

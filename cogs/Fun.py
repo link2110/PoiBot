@@ -20,7 +20,6 @@ class Fun():
                    "https://45.media.tumblr.com/229ec0458891c4dcd847545c81e760a5/tumblr_mpfy232F4j1rxrpjzo1_r2_500.gif",
                    "https://media.giphy.com/media/KZQlfylo73AMU/giphy.gif",
                    "https://media.giphy.com/media/12hvLuZ7uzvCvK/giphy.gif",
-                   "http://gallery1.anivide.com/_full/65030_1382582341.gif",
                    "https://49.media.tumblr.com/8e8a099c4eba22abd3ec0f70fd087cce/tumblr_nxovj9oY861ur1mffo1_500.gif ",
                    "http://i.imgur.com/wJ5x5cp.gif", "http://i.imgur.com/maXcnyC.gif"]
         pat = random.randint(0, len(headpat_list))
