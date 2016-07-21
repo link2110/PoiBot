@@ -187,38 +187,40 @@ class Special:
             raise e
 
     @commands.command(pass_context=True, no_pm=True, aliases=["color"])
-    async def colour(self, ctx, hex_color: str):
+    @is_r_anime()
+    async def colour(self, ctx, hex_color: str = None):
         """Lets you change your role colour"""
         role_list = ctx.message.author.roles
-        timenow = datetime.datetime.utcnow()
-        with shelve.open(color_change_db, flag="c", writeback=True) as db:
 
-            try:
-                last_changed = db[ctx.message.author.id]["date"]
-                if (timenow - last_changed) > datetime.timedelta(days=7):
-                    for role in role_list:
-                        if role.name.startswith("#"):
-                            color_role = role
-                            data = {"name": ctx.message.author.name, "id": ctx.message.author.id, "date": timenow}
-                            await self.bot.edit_role(ctx.message.server, color_role, name="#" + hex_color, color=discord.Color(value=int(hex_color, 16)))
-                            db[ctx.message.author.id] = data
-                            await self.bot.say("Role color changed to {}".format(hex_color))
-                else:
-                    msg = "You cannot change your role colour more than once per week. Your last change was on {}".format(last_changed.strftime("%b %d %I:%M %p UTC"))
-                    await self.bot.say(msg)
+        allowed_list = ["cd5c5c", "ffb2bc", "dc143c", "b22222", "cd945c", "ffcfb2", "dc5014", "ff7256", "b26a22",
+                        "cdcc5c", "fff5b2", "feff62", "ffcc66", "95cd5c", "c8e0a4", "9fdc14", "68b222", "5ccd5c",
+                        "bbffb2", "3adc14", "22b224", "5ccd94", "b2ffcf", "14dc52", "22b26c", "5c95cd", "b2e2ff",
+                        "007cff", "2f7bce", "5c5ccd", "b2bbff", "6666ce", "cfb2ff", "c672fa", "982cff", "cc5ccd",
+                        "fa72e9", "b53ed1", "b222ae", "cd5c95", "fa72a4", "ffb2e2", "dc149d", "b22265", "64ceff",
+                        "5ccdcc", "21a9ab"]
+
+        if hex_color is None:
+            for role in role_list:
+                if role.name.startswith("#"):
+                    role_list.remove(role)
+                    await self.bot.replace_roles(ctx.message.author, *role_list)
+                    await self.bot.say("Removed your colour role")
                     return
 
-            except KeyError:
-                for role in role_list:
-                    if role.name.startswith("#"):
-                        color_role = role
-                        data = {"name": ctx.message.author.name, "id": ctx.message.author.id, "date": timenow}
-                        await self.bot.edit_role(ctx.message.server, color_role, name="#" + hex_color, color=discord.Color(value=int(hex_color, 16)))
-                        db[ctx.message.author.id] = data
-                        await self.bot.say("Role color changed to {}".format(hex_color))
+        if hex_color.lower().lstrip("#").lstrip("#") in allowed_list:
+            for role in role_list:
+                if role.name.startswith("#"):
+                    role_list.remove(role)
+                    await self.bot.replace_roles(ctx.message.author, *role_list)
+                    await self.bot.add_roles(ctx.message.author, discord.utils.get(ctx.message.server.roles, name="#" + hex_color.lower().lstrip("#")))
+                    await self.bot.say("Role color changed to {}".format(hex_color.lower().lstrip("#")))
+                    return
+            await self.bot.add_roles(ctx.message.author, discord.utils.get(ctx.message.server.roles, name="#" + hex_color.lower().lstrip("#")))
+            await self.bot.say("Role color changed to {}".format(hex_color.lower().lstrip("#")))
+            return
+        else:
+            await self.bot.say("Hex value is not in allowed list, please refer to the allowed list.")
 
-            except Exception:
-                raise
 
     @commands.command(pass_context=True, hidden=True, no_pm=True)
     @is_admin()
