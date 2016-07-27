@@ -53,28 +53,29 @@ class AniList:
                     data = await resp.json()
                     return data
 
-    @commands.command(no_pm=True, pass_context=True)
+    @commands.command(no_pm=True, pass_context=True, hidden=True)
     async def searchanime(self, ctx, *, anime_title: str):
         """Searches for an anime title and returns information on it."""
-        with shelve.open("H:\Documents\Bot Folder\PoiBot\credentials\\temp", flag="r") as db:
-            data = {'access_token': db["AccessToken"]}
-            url ="https://anilist.co/api/anime/search/" + anime_title.replace(" ", "%20")
-            with aiohttp.ClientSession() as session:
-                async with session.get(url, params=data) as resp:
-                    raw_data = await resp.text()
-                    if raw_data == "/n" or resp.status == 404:
-                        await self.bot.say("No results found for {}".format(anime_title))
-                    else:
-                        get_id = json.loads(raw_data)
-                        ani_data = await self.parse_anime(self, get_id[0]["id"])
-                        msg = "**{}** / **{}**\n**Status:** {} | **Average score:** {}/100\n{}\n**Genres:** {}\n**Description:** {}\n{}".format(
-                        ani_data["title_romaji"], ani_data["title_japanese"], ani_data["airing_status"], ani_data["average_score"],
-                        "**Next Episode:** Episode {} in {} hrs".format(ani_data["airing"]["next_episode"], ":".join(
-                            str(datetime.timedelta(seconds=int(ani_data["airing"]["countdown"]))).split(":")[:2])) if ani_data[
-                             "airing_status"].lower() == "currently airing" else "**Episodes:** {}".format(ani_data["total_episodes"]),
-                        str(ani_data["genres"]).strip("[]").replace("'", ""), str(ani_data["description"]).replace("<br>", ""),
-                        "http://anilist.co/anime/{}/".format(ani_data["id"]))
-                        await self.bot.say(msg)
+        await self._get_readonly(self)
+        token = await self.get_token(self)
+        data = {'access_token': token}
+        url ="https://anilist.co/api/anime/search/" + anime_title.replace(" ", "%20")
+        with aiohttp.ClientSession() as session:
+            async with session.get(url, params=data) as resp:
+                raw_data = await resp.text()
+                if raw_data == "/n" or resp.status == 404:
+                    await self.bot.say("No results found for {}".format(anime_title))
+                else:
+                    get_id = json.loads(raw_data)
+                    ani_data = await self.parse_anime(self, get_id[0]["id"])
+                    msg = "**{}** / **{}**\n**Status:** {} | **Average score:** {}/100\n{}\n**Genres:** {}\n**Description:** `{}`\n{}".format(
+                    ani_data["title_romaji"], ani_data["title_japanese"], ani_data["airing_status"], ani_data["average_score"],
+                    "**Next Episode:** Episode {} in {} hrs".format(ani_data["airing"]["next_episode"], ":".join(
+                        str(datetime.timedelta(seconds=int(ani_data["airing"]["countdown"]))).split(":")[:2])) if ani_data[
+                         "airing_status"].lower() == "currently airing" else "**Episodes:** {}".format(ani_data["total_episodes"]),
+                    str(ani_data["genres"]).strip("[]").replace("'", ""), str(ani_data["description"]).replace("<br>", ""),
+                    "http://anilist.co/anime/{}/".format(ani_data["id"]))
+                    await self.bot.say(msg)
 
 
     @commands.command(pass_context=True)
@@ -82,6 +83,28 @@ class AniList:
         with open("H:\Documents\Bot Folder\PoiBot\credentials\\credentials.txt") as f:
             data = json.load(f)
 
+# @commands.command(no_pm=True, pass_context=True, hidden=True)
+#     async def searchanime(self, ctx, *, anime_title: str):
+#         """Searches for an anime title and returns information on it."""
+#         with shelve.open("H:\Documents\Bot Folder\PoiBot\credentials\\temp", flag="r") as db:
+#             data = {'access_token': db["AccessToken"]}
+#             url ="https://anilist.co/api/anime/search/" + anime_title.replace(" ", "%20")
+#             with aiohttp.ClientSession() as session:
+#                 async with session.get(url, params=data) as resp:
+#                     raw_data = await resp.text()
+#                     if raw_data == "/n" or resp.status == 404:
+#                         await self.bot.say("No results found for {}".format(anime_title))
+#                     else:
+#                         get_id = json.loads(raw_data)
+#                         ani_data = await self.parse_anime(self, get_id[0]["id"])
+#                         msg = "**{}** / **{}**\n**Status:** {} | **Average score:** {}/100\n{}\n**Genres:** {}\n**Description:** {}\n{}".format(
+#                         ani_data["title_romaji"], ani_data["title_japanese"], ani_data["airing_status"], ani_data["average_score"],
+#                         "**Next Episode:** Episode {} in {} hrs".format(ani_data["airing"]["next_episode"], ":".join(
+#                             str(datetime.timedelta(seconds=int(ani_data["airing"]["countdown"]))).split(":")[:2])) if ani_data[
+#                              "airing_status"].lower() == "currently airing" else "**Episodes:** {}".format(ani_data["total_episodes"]),
+#                         str(ani_data["genres"]).strip("[]").replace("'", ""), str(ani_data["description"]).replace("<br>", ""),
+#                         "http://anilist.co/anime/{}/".format(ani_data["id"]))
+#                         await self.bot.say(msg)
 
 
 

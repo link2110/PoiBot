@@ -12,7 +12,6 @@ with open("H:\Documents\Bot Folder\PoiBot\credentials\\credentials.txt") as f:
     creds = json.load(f)
     token = creds["owm"]
     owm = pyowm.OWM(token)
-# owm = pyowm.OWM("cd7db42523c1c1e4e4a5af9d2df6b168")
 registry = owm.city_id_registry()
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
 Q_ = ureg.Quantity
@@ -285,6 +284,8 @@ class Commands():
     async def define(self, word: str):
         dictionary = PyDictionary()
         await self.bot.say(dictionary.meaning(word))
+
+
 
 
 

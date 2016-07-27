@@ -147,44 +147,52 @@ class Special:
     @is_r_anime()
     async def joinchannel(self, ctx, *, channel_name: str):
         """Adds you to the selected hidden channel"""
-        try:
-            role = discord.utils.get(ctx.message.server.roles, name=channel_name)
-            channel_name = channel_name.replace(" ", "-")
-            channel_ref = discord.utils.get(ctx.message.server.channels, name=channel_name)
-            await self.bot.add_roles(ctx.message.author, role)
-            await self.bot.say("Welcome to <#{}>".format(channel_ref.id))
-        except AttributeError:
-            if "#" in channel_name:
-                await self.bot.say("Could not add you to the channel. Don't use # in the channel name.")
-            else:
-                await self.bot.say("Could not add you to the channel\nChannel {} does not exist".format(channel_name))
-        except Exception as e:
-            await self.bot.say("Could not add you to the channel")
-            await self.bot.say(e)
-            raise e
+        opt_in = discord.utils.get(ctx.message.server.channels, name=channel_name)
+        if opt_in:
+            try:
+                role = discord.utils.get(ctx.message.server.roles, name=channel_name)
+                channel_name = channel_name.replace(" ", "-")
+                channel_ref = discord.utils.get(ctx.message.server.channels, name=channel_name)
+                await self.bot.add_roles(ctx.message.author, role)
+                await self.bot.say("Welcome to <#{}>".format(channel_ref.id))
+            except AttributeError:
+                if "#" in channel_name:
+                    await self.bot.say("Could not add you to the channel. Don't use # in the channel name.")
+                else:
+                    await self.bot.say("Could not add you to the channel\nChannel {} does not exist".format(channel_name))
+            except Exception as e:
+                await self.bot.say("Could not add you to the channel")
+                await self.bot.say(e)
+                raise e
+        else:
+            await self.bot.say("Could not add you to the channel\nChannel {} does not exist".format(channel_name))
         
     @commands.command(pass_context=True, no_pm=True)
     @is_r_anime()
     async def leavechannel(self, ctx, *, channel_name: str):
         """Removes you from the selected hidden channel"""
-        try:
-            role = discord.utils.get(ctx.message.server.roles, name=channel_name)
-            channel_name = channel_name.replace(" ", "-")
-            channel_ref = discord.utils.get(ctx.message.server.channels, name=channel_name)
-            role_list = ctx.message.author.roles
-            if role in role_list:
-                role_list.remove(role)
-                await self.bot.replace_roles(ctx.message.author, *role_list)
-                await self.bot.send_message(ctx.message.author, "You have left {}".format(channel_ref.name))
-            else:
-                return
-        except AttributeError:
-            if "#" in channel_name:
-                await self.bot.say("Could not remove you from the channel. Don't use # in the channel name.")
-            else:
-                await self.bot.say("Could not remove you from the channel\nChannel {} does not exist".format(channel_name))
-        except Exception as e:
-            raise e
+        opt_in = discord.utils.get(ctx.message.server.channels, name=channel_name)
+        if opt_in:
+            try:
+                role = discord.utils.get(ctx.message.server.roles, name=channel_name)
+                channel_name = channel_name.replace(" ", "-")
+                channel_ref = discord.utils.get(ctx.message.server.channels, name=channel_name)
+                role_list = ctx.message.author.roles
+                if role in role_list:
+                    role_list.remove(role)
+                    await self.bot.replace_roles(ctx.message.author, *role_list)
+                    await self.bot.send_message(ctx.message.author, "You have left {}".format(channel_ref.name))
+                else:
+                    return
+            except AttributeError:
+                if "#" in channel_name:
+                    await self.bot.say("Could not remove you from the channel. Don't use # in the channel name.")
+                else:
+                    await self.bot.say("Could not remove you from the channel\nChannel {} does not exist".format(channel_name))
+            except Exception as e:
+                raise e
+        else:
+            await self.bot.say("Could not add you to the channel\nChannel {} does not exist".format(channel_name))
 
     @commands.command(pass_context=True, no_pm=True, aliases=["color"])
     @is_r_anime()
