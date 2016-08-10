@@ -60,10 +60,12 @@ class Admin():
         msg = "Softbanned {}".format(member.name)
         await self.bot.say(msg)
 
-    @commands.command(no_pm=True)
+    @commands.command(no_pm=True, pass_context=True)
     @is_admin()
-    async def ban(self, member:discord.Member):
-        """Bans a member and deletes 3 days of their messages."""
+    async def ban(self, ctx, member: discord.Member):
+        """Bans a member and deletes 3 days of their messages. Requires mentioning the user"""
+        if ctx.message.mentions <= 0:
+            return
         await self.bot.ban(member, delete_message_days=3)
         msg = "Banned {}".format(member.name)
         await self.bot.say(msg)

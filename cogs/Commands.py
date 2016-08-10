@@ -30,7 +30,7 @@ class Commands():
             msg = truncate(result, 3)
             await self.bot.say(msg)
         except Exception as e:
-            msg = "Something's not right, either the units, type, or spelling"
+            msg = "Something's not right, either the units, type, or spelling. For currency, please use `?currency`"
             await self.bot.say(msg)
             await self.bot.say(e)
             
@@ -90,7 +90,6 @@ class Commands():
         Gets the last time you were mentioned, along with context messages
         If <number> is passed, it gets the last <number> of times mentioned.
         """
-        #TODO: use mentioned_in instead of checking for ID, maybe make this send one message per mention instead of 3 (use 3 codeblocks with /n between)
         before_msg = []
         before_auth = []
         before_time = []
@@ -98,10 +97,10 @@ class Commands():
         after_auth = []
         after_time = []
         mention_count = 0
-        mention_id = ctx.message.author.id
+        author = ctx.message.author
         try:
             async for message in self.bot.logs_from(ctx.message.channel, limit=5000):
-                if discord.User(id=mention_id) in message.mentions:
+                if author.mentioned_in(message):
                     mention_count += 1
                     async for x in self.bot.logs_from(ctx.message.channel, limit=3, before=message):
                         before_msg.append(x.content)
@@ -122,26 +121,24 @@ class Commands():
                         before_time[1].strftime("On %a %b %d at %H:%M:%S UTC"), before_auth[1], before_msg[1],
                         before_time[2].strftime("On %a %b %d at %H:%M:%S UTC"), before_auth[2], before_msg[2]
                     )
-                    await self.bot.send_message(ctx.message.author, msg1)
 
                     msg = "Message:\n```\n{} {} said:\n{}\n```".format(
                         message.timestamp.strftime("On %a %b %d at %H:%M:%S UTC"), message.author.name,
                         message.clean_content
                     )
-                    await self.bot.send_message(ctx.message.author, msg)
 
                     msg2 = "After:\n```\n{} {} said:\n{}\n\n{} {} said:\n{}\n\n{} {} said:\n{}\n```".format(
                         after_time[0].strftime("On %a %b %d at %H:%M:%S UTC"), after_auth[0], after_msg[0],
                         after_time[1].strftime("On %a %b %d at %H:%M:%S UTC"), after_auth[1], after_msg[1],
                         after_time[2].strftime("On %a %b %d at %H:%M:%S UTC"), after_auth[2], after_msg[2]
                     )
-                    await self.bot.send_message(ctx.message.author, msg2)
+                    await self.bot.send_message(ctx.message.author, "{}\n{}\n{}".format(msg1, msg, msg2))
 
                     if mention_count >= number:
                         await self.bot.say("\U0001F4EC")
                         return
             if mention_count == 0:
-                await self.bot.say("Could not find a mention of you in the last 5000 messages, or the message was a role mention.")
+                await self.bot.say("Could not find a mention of you in the last 5000 messages")
         except Exception as e:
             await self.bot.send_message(ctx.message.author, e)
             
@@ -210,7 +207,7 @@ class Commands():
         msg = "I rate {} a {}/10".format(thing_to_rate, num_rate)
         await self.bot.say(msg)
 
-    @commands.command(no_pm=True)
+    @commands.command(no_pm=True, aliases=["pick"])
     async def choose(self, *choices: str):
         """Chooses between multiple choices"""
         await self.bot.say("I pick {}".format(random.choice(choices)))
@@ -258,12 +255,12 @@ class Commands():
             member = ctx.message.mentions[0]
         status = "{} **playing** {}".format(member.status, member.game) if member.game else member.status
         roles = ", ".join(str(role) for role in member.roles).lstrip("@everyone, ")
-        msg = "**Name:** {}\n**ID:** {}\n**Joined server:** {}\n**Account created:** {}\n**Status:** {}\n**Roles:** {}".format(
-            member.name, member.id, member.joined_at.strftime("%A %B %d %Y %H:%M %p UTC"),
+        msg = "**Name:** {}\n**ID:** {}\n**Nickname:** {}\n**Joined server:** {}\n**Account created:** {}\n**Status:** {}\n**Roles:** {}".format(
+            member.name, member.id, member.nick, member.joined_at.strftime("%A %B %d %Y %H:%M %p UTC"),
             member.created_at.strftime("%A %B %d %Y %H:%M %p UTC"), status, roles)
         await self.bot.say(msg)
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, aliases=["sinfo"])
     async def serverinfo(self, ctx):
         """Gets info about the server"""
         msg = "**{}** (ID: {})\n**Owner:** {} (ID: {})\n**Members:** {}\n**Channels:** {} text, {} voice\n**Roles:** {}\n**Created on:** {}\n**Default channel:** {}\n**Region:** {}\n**Icon:** <{}>".format(

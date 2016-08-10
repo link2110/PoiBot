@@ -62,19 +62,19 @@ async def uptime():
 
 @bot.command(pass_context=True, hidden=True)
 @is_owner()
-async def changenick(ctx, name:str):
+async def changenick(ctx, *, name:str):
     await bot.change_nickname(ctx.message.server.me, name)
     await bot.say("\U0001F44D")
 
 @bot.command(hidden=True)
 @is_owner()
-async def changename(name:str):
+async def changename(*, name:str):
     await bot.edit_profile(username=name)
     await bot.say("\U0001F44D")
 
 @bot.command(hidden=True)
 @is_owner()
-async def changegame(game:str):
+async def changegame(*, game:str):
     await bot.change_status(game=discord.Game(name=game))
     await bot.say("\U0001F44D")
 
@@ -102,7 +102,7 @@ async def getid(member:discord.Member):
     """Gets the user ID of mentioned user"""
     await bot.say(member.id)
 
-@bot.command()
+@bot.command(aliases=["invite", "link"])
 async def url():
     """Generates an invite link to bring Yuudachi to your server"""
     oauth_url = discord.utils.oauth_url("181157059130163207", permissions=discord.Permissions.all())

@@ -252,6 +252,13 @@ class Tags:
             await self.bot.say('The tag does not exist.')
             return
 
+        if ctx.message.author.id == "97097796372414464":
+            db = self.config.get(tag.location)
+            tag.content = content
+            await self.config.put(tag.location, db)
+            await self.bot.say('Tag successfully edited.')
+            return
+
         if tag.owner_id != ctx.message.author.id:
             await self.bot.say('Only the tag owner can edit this tag.')
             return
