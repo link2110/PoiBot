@@ -12,6 +12,9 @@ with open("H:\Documents\Bot Folder\PoiBot\credentials\\credentials.txt") as f:
     creds = json.load(f)
     token = creds["owm"]
     owm = pyowm.OWM(token)
+    client_id = creds["anilist_client_id"]
+    anilist_secret = creds["anilist_client_secret"]
+    timezone_db_key = creds["timezonedb_key"]
 registry = owm.city_id_registry()
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
 Q_ = ureg.Quantity
@@ -162,9 +165,9 @@ class Commands():
         sunrise_seconds = w.get_sunrise_time()
         sunset_seconds = w.get_sunset_time()
 
-        url = "http://api.timezonedb.com/?lat={}&lng={}&key=Q81W68EC91UL&format=json"
+        url = "http://api.timezonedb.com/?lat={}&lng={}&key={}&format=json"
         with aiohttp.ClientSession() as session:
-            async with session.get(url.format(location.get_lat(), location.get_lon())) as resp:
+            async with session.get(url.format(location.get_lat(), location.get_lon(), timezone_db_key)) as resp:
                 offset_data = await resp.json()
                 offset_time = offset_data["gmtOffset"]
 
@@ -282,7 +285,32 @@ class Commands():
         dictionary = PyDictionary()
         await self.bot.say(dictionary.meaning(word))
 
+@commands.command(no_pm=True, pass_context=True, aliases=["llss"])
+async def sunshine(self, ctx):
+    """Tells you when the next ep is airing and info about the anime"""
 
+    url = "https://anilist.co/api/anime/21584"
+    token_url = "https://anilist.co/api/auth/access_token"
+    auth_data = {"grant_type": "client_credentials", "client_id": client_id,
+                 "client_secret": anilist_secret}
+    with aiohttp.ClientSession() as session:
+        async with session.post(token_url, data=auth_data) as resp:
+            token = await resp.json()
+            access_code = {"access_token": token["access_token"]}
+            # TODO: cache token and make reset loop
+        async with session.get(url, params=access_code) as resp2:
+            data = await resp2.json()
+
+            msg = "**{}** / **{}**\n**Status:** {} | **Average score:** {}/100\n{}\n**Genres:** {}\n**Description:** {}\n{}".format(
+                data["title_romaji"], data["title_japanese"], data["airing_status"], data["average_score"],
+                "**Next Episode:** Episode {} in {} hrs".format(data["airing"]["next_episode"], ":".join(
+                    str(dt.timedelta(seconds=int(data["airing"]["countdown"]))).split(":")[:2])) if data[
+                                                                                                        "airing_status"].lower() == "currently airing" else "**Episodes:** {}".format(
+                    data["total_episodes"]),
+                str(data["genres"]).strip("[]").replace("'", ""), str(data["description"]).replace("<br>", ""),
+                "http://anilist.co/anime/{}/".format(data["id"]))
+            await self.bot.send_file(ctx.message.channel, "H:\Documents\Bot Folder\PoiBot\\assets\\temp.jpg",
+                                     content=msg)
 
 
 
